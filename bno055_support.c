@@ -53,6 +53,7 @@
  Includes
 *---------------------------------------------------------------------------*/
 #include "bno055.h"
+#include "i2c.h"
 
 /*----------------------------------------------------------------------------*
  *  The following APIs are used for reading and writing of
@@ -513,30 +514,12 @@ s8 I2C_routine(void)
 s8 BNO055_I2C_bus_write(u8 dev_addr, u8 reg_addr, u8 *reg_data, u8 cnt)
 {
 	s32 BNO055_iERROR = BNO055_INIT_VALUE;
-	u8 array[I2C_BUFFER_LEN];
-	u8 stringpos = BNO055_INIT_VALUE;
 
-	array[BNO055_INIT_VALUE] = reg_addr;
-	for (stringpos = BNO055_INIT_VALUE; stringpos < cnt; stringpos++)
-		array[stringpos + BNO055_I2C_BUS_WRITE_ARRAY_INDEX] =
-			*(reg_data + stringpos);
+	if(i2c_write_bytes(I2C_BUS_FDS[0], dev_addr, reg_addr, reg_data, cnt))
+	{
+		BNO055_iERROR = -1;
 	}
-	/*
-	* Please take the below APIs as your reference for
-	* write the data using I2C communication
-	* "BNO055_iERROR = I2C_WRITE_STRING(DEV_ADDR, ARRAY, CNT+1)"
-	* add your I2C write APIs here
-	* BNO055_iERROR is an return value of I2C read API
-	* Please select your valid return value
-	* In the driver BNO055_SUCCESS defined as 0
-    * and FAILURE defined as -1
-	* Note :
-	* This is a full duplex operation,
-	* The first read data is discarded, for that extra write operation
-	* have to be initiated. For that cnt+1 operation done
-	* in the I2C write string function
-	* For more information please refer data sheet SPI communication:
-	*/
+
 	return (s8)BNO055_iERROR;
 }
 
@@ -552,23 +535,12 @@ s8 BNO055_I2C_bus_write(u8 dev_addr, u8 reg_addr, u8 *reg_data, u8 cnt)
 s8 BNO055_I2C_bus_read(u8 dev_addr, u8 reg_addr, u8 *reg_data, u8 cnt)
 {
 	s32 BNO055_iERROR = BNO055_INIT_VALUE;
-	u8 array[I2C_BUFFER_LEN] = {BNO055_INIT_VALUE};
-	u8 stringpos = BNO055_INIT_VALUE;
 
-	array[BNO055_INIT_VALUE] = reg_addr;
+	if(i2c_read(I2C_BUS_FDS[0], dev_addr, reg_addr, reg_data, cnt))
+	{
+		BNO055_iERROR = -1;
+	}
 
-	/* Please take the below API as your reference
-	 * for read the data using I2C communication
-	 * add your I2C read API here.
-	 * "BNO055_iERROR = I2C_WRITE_READ_STRING(DEV_ADDR,
-	 * ARRAY, ARRAY, 1, CNT)"
-	 * BNO055_iERROR is an return value of SPI write API
-	 * Please select your valid return value
-     * In the driver BNO055_SUCCESS defined as 0
-     * and FAILURE defined as -1
-	 */
-	for (stringpos = BNO055_INIT_VALUE; stringpos < cnt; stringpos++)
-		*(reg_data + stringpos) = array[stringpos];
 	return (s8)BNO055_iERROR;
 }
 /*	Brief : The delay routine
